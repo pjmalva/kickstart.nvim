@@ -6,6 +6,8 @@ vim.opt.relativenumber = true
 vim.opt.mouse = ''
 vim.opt.showmode = false
 
+vim.wo.wrap = false
+
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
 end)
@@ -36,8 +38,8 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.list = false
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣', eol = '↩' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -180,11 +182,26 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
         -- },
-        -- pickers = {}
+        pickers = {
+          find_files = {
+            hidden = true,
+          },
+        },
+        defaults = {
+          mappings = {
+            i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          },
+          file_ignore_patterns = {
+            'node_modules',
+            '.git',
+            '.cache',
+            '.venv',
+            '.vscode',
+            '.DS_Store',
+            'vendor',
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -511,6 +528,7 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -524,7 +542,27 @@ require('lazy').setup({
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
+    config = function(plug, config)
+      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
+      parser_config.blade = {
+        install_info = {
+          url = 'https://github.com/EmranMR/tree-sitter-blade',
+          files = { 'src/parser.c' },
+          branch = 'main',
+        },
+        filetype = 'blade',
+      }
+
+      vim.filetype.add {
+        pattern = {
+          ['.*%.blade%.php'] = 'blade',
+        },
+      }
+
+      require(plug.main).setup(config)
+    end,
   },
+
   {
     'folke/zen-mode.nvim',
     config = function()
@@ -542,18 +580,48 @@ require('lazy').setup({
       end)
     end,
   },
-  require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.indent_line',
-  require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+
+  {
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    config = function()
+      require('toggleterm').setup {
+        direction = 'float',
+      }
+      vim.keymap.set('n', '<leader>tt', ':ToggleTerm direction=float<CR>', { desc = 'Term: [T]oggle [T]erm' })
+    end,
+  },
+
+  {
+    'stevearc/oil.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local oil = require 'oil'
+      oil.setup {
+        watch_for_changes = true,
+        view_options = {
+          show_hidden = true,
+        },
+      }
+      vim.keymap.set('n', '<leader>pv', oil.toggle_float, {})
+      vim.keymap.set('n', '-', '<CMD>Oil<CR>', {})
+    end,
+  },
+
+  {
+    'github/copilot.vim',
+  },
+
+  require 'plugins.debug',
+  require 'plugins.indent_line',
+  require 'plugins.autopairs',
+  -- require 'plugins.comment',
+  require 'plugins.laravel',
+  -- require 'plugins.neo-tree',
+  -- require 'plugins.lint',
+  -- require 'plugins.gitsigns', -- adds gitsigns recommend keymaps
   --
-  -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    This is the easiest way to modularize your config.
-  --
-  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     icons = vim.g.have_nerd_font and {} or {
