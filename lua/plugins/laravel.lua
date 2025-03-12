@@ -10,9 +10,12 @@ return {
   keys = {
     { '<leader>la', ':Laravel artisan<cr>' },
     { '<leader>lr', ':Laravel routes<cr>' },
-    { '<leader>lm', ':Laravel related<cr>' },
+    { '<leader>lt', ':Laravel related<cr>' },
+    { '<leader>lm', ':Laravel make<cr>' },
   },
   event = { 'VeryLazy' },
   opts = {},
-  config = true,
+  config = function()
+    require('laravel').setup()
+  end,
 }
