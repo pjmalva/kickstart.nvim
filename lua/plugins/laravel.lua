@@ -14,7 +14,25 @@ return {
     { '<leader>lm', ':Laravel make<cr>' },
   },
   event = { 'VeryLazy' },
-  opts = {},
+  opts = {
+    lsp_server = 'intelephense',
+    features = {
+      route_info = {
+        enabled = false,
+        view = 'right',
+      },
+      model_info = {
+        enabled = true,
+      },
+      override = {
+        enabled = true,
+      },
+      pickers = {
+        enabled = true,
+        view = 'telescope',
+      },
+    },
+  },
   config = function()
     require('laravel').setup()
   end,

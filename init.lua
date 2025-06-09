@@ -329,6 +329,7 @@ require('lazy').setup({
 
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
 
       --  Add any additional override configuration in the following tables. Available keys are:
       --  - cmd (table): Override the default command used to start the server
@@ -349,6 +350,11 @@ require('lazy').setup({
         tailwindcss = {},
         svelte = {},
         volar = {},
+        html = {
+          init_options = {
+            provideFormatter = false,
+          },
+        },
 
         lua_ls = {
           settings = {
@@ -378,6 +384,19 @@ require('lazy').setup({
           end,
         },
       }
+
+      require('lspconfig').html.setup {
+        capabilities = capabilities,
+        filetypes = { 'html', 'blade' },
+        init_options = {
+          configurationSection = { 'html', 'css', 'javascript' },
+          embeddedLanguages = {
+            css = true,
+            javascript = true,
+          },
+          provideFormatter = true,
+        },
+      }
     end,
   },
 
@@ -387,18 +406,18 @@ require('lazy').setup({
     cmd = { 'ConformInfo' },
     keys = {
       {
-        '<leader>f',
+        '<leader>F',
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
-        mode = '',
+        mode = 'n',
         desc = '[F]ormat buffer',
       },
     },
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, php = true, blade = true }
         local lsp_format_opt
         if disable_filetypes[vim.bo[bufnr].filetype] then
           lsp_format_opt = 'never'
@@ -412,6 +431,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        -- php = { 'pint' },
         -- blade = { 'blade-formatter' },
       },
     },
@@ -531,17 +551,42 @@ require('lazy').setup({
   },
 
   {
+    'jwalton512/vim-blade',
+  },
+
+  {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'php' },
+      ensure_installed = {
+        'bash',
+        'blade',
+        'c',
+        'comment',
+        'css',
+        'diff',
+        'html',
+        'javascript',
+        'json',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'php',
+        'php_only',
+        'query',
+        'typescript',
+        'vim',
+        'vimdoc',
+      },
       auto_install = true,
       highlight = {
         enable = true,
-        additional_vim_regex_highlighting = { 'ruby', 'php' },
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      indent = {
+        enable = true,
+      },
     },
     config = function(plug, config)
       local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
@@ -570,7 +615,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>zm', function()
         require('zen-mode').setup {
           window = {
-            width = 90,
+            width = 120,
             options = {},
           },
         }
@@ -617,7 +662,7 @@ require('lazy').setup({
   require 'plugins.indent_line',
   require 'plugins.autopairs',
   -- require 'plugins.comment',
-  require 'plugins.laravel',
+  -- require 'plugins.laravel',
   require 'plugins.harpoon',
   -- require 'plugins.neo-tree',
   -- require 'plugins.lint',
@@ -644,5 +689,6 @@ require('lazy').setup({
   },
 })
 
+--
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
