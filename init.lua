@@ -654,9 +654,9 @@ require('lazy').setup({
     end,
   },
 
-  {
-    'github/copilot.vim',
-  },
+  -- {
+  --   'github/copilot.vim',
+  -- },
 
   require 'plugins.debug',
   require 'plugins.indent_line',
@@ -668,6 +668,7 @@ require('lazy').setup({
   -- require 'plugins.lint',
   -- require 'plugins.gitsigns', -- adds gitsigns recommend keymaps
   --
+  require 'plugins.supermaven',
   { import = 'custom.plugins' },
 }, {
   ui = {
