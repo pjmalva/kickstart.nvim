@@ -50,6 +50,11 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+
 -- [[ Basic Keymaps ]]
 -- Clear highlights on search when pressing <Esc> in normal mode
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -349,7 +354,6 @@ require('lazy').setup({
         intelephense = {},
         tailwindcss = {},
         svelte = {},
-        volar = {},
         html = {
           init_options = {
             provideFormatter = false,
@@ -416,21 +420,23 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
-        local disable_filetypes = { c = true, cpp = true, php = true, blade = true }
-        local lsp_format_opt
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          lsp_format_opt = 'never'
-        else
-          lsp_format_opt = 'fallback'
-        end
-        return {
-          timeout_ms = 500,
-          lsp_format = lsp_format_opt,
-        }
-      end,
+      format_on_save = false,
+      -- format_on_save = function(bufnr)
+      --   local disable_filetypes = { c = true, cpp = true, php = true, blade = true }
+      --   local lsp_format_opt
+      --   if disable_filetypes[vim.bo[bufnr].filetype] then
+      --     lsp_format_opt = 'never'
+      --   else
+      --     lsp_format_opt = 'fallback'
+      --   end
+      --   return {
+      --     timeout_ms = 500,
+      --     lsp_format = lsp_format_opt,
+      --   }
+      -- end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        svelte = { 'prettier' },
         -- php = { 'pint' },
         -- blade = { 'blade-formatter' },
       },
@@ -619,7 +625,9 @@ require('lazy').setup({
             options = {},
           },
         }
+
         require('zen-mode').toggle()
+
         vim.wo.wrap = false
         vim.wo.number = true
         vim.wo.rnu = true
@@ -664,6 +672,7 @@ require('lazy').setup({
   -- require 'plugins.comment',
   -- require 'plugins.laravel',
   require 'plugins.harpoon',
+  require 'plugins.twilight',
   -- require 'plugins.neo-tree',
   -- require 'plugins.lint',
   -- require 'plugins.gitsigns', -- adds gitsigns recommend keymaps
