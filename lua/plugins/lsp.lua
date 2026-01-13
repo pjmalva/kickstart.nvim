@@ -40,7 +40,7 @@ return {
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -63,7 +63,7 @@ return {
             })
           end
 
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
@@ -85,16 +85,9 @@ return {
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
       capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-      --  Add any additional override configuration in the following tables. Available keys are:
-      --  - cmd (table): Override the default command used to start the server
-      --  - filetypes (table): Override the default list of associated filetypes for the server
-      --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-      --  - settings (table): Override the default settings passed when initializing the server.
-      --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
         gopls = {},
-        pyright = {},
         rust_analyzer = {},
         ts_ls = {},
         cssmodules_ls = {},
@@ -118,6 +111,19 @@ return {
             },
           },
         },
+        pyright = {
+          settings = {
+            python = {
+              pythonPath = './.venv/bin/python',
+              venvPath = './.venv',
+              analysis = {
+                autoImportCompletions = true,
+                diagnosticMode = 'workspace',
+                typeCheckingMode = 'basic',
+              },
+            },
+          },
+        },
       }
 
       require('mason').setup()
@@ -126,19 +132,21 @@ return {
       vim.list_extend(ensure_installed, {
         'stylua',
       })
+
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
+        -- handlers = {
+        --   function(server_name)
+        --     local server = servers[server_name] or {}
+        --     server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        --     vim.lsp.config(server_name, server)
+        --     vim.lsp.enable(server_name)
+        --   end,
+        -- },
       }
 
-      require('lspconfig').html.setup {
+      vim.lsp.config('html', {
         capabilities = capabilities,
         filetypes = { 'html', 'blade' },
         init_options = {
@@ -149,7 +157,25 @@ return {
           },
           provideFormatter = true,
         },
-      }
+      })
+
+      vim.lsp.config('pyright', {
+        capabilities = capabilities,
+        filetypes = { 'python' },
+        settings = {
+          python = {
+            pythonPath = './.venv/bin/python',
+            analysis = {
+              autoImportCompletions = true,
+              diagnosticMode = 'workspace',
+              typeCheckingMode = 'basic',
+            },
+          },
+        },
+      })
+
+      vim.lsp.enable('html')
+      vim.lsp.enable('pyright')
     end,
   },
 }

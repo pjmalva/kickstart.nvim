@@ -39,6 +39,7 @@ return {
           '.vscode',
           '.DS_Store',
           'vendor',
+          'public/js',
         },
       },
       extensions = {
